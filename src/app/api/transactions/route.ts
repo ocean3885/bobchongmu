@@ -21,7 +21,13 @@ export async function GET(req: NextRequest) {
             `).get(memberId, userId);
             if (!member) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-            const transactions = db.prepare('SELECT * FROM transactions WHERE member_id = ? ORDER BY created_at DESC').all(memberId);
+            const transactions = db.prepare(`
+                SELECT t.*, m.restaurant_name 
+                FROM transactions t 
+                LEFT JOIN meals m ON t.related_meal_id = m.id 
+                WHERE t.member_id = ? 
+                ORDER BY t.created_at DESC
+            `).all(memberId);
             return NextResponse.json(transactions);
         }
 

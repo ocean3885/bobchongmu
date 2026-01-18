@@ -188,9 +188,7 @@ export default function MemberDetail() {
                                         {new Date(t.created_at).toLocaleString('ko-KR', {
                                             year: 'numeric',
                                             month: 'long',
-                                            day: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit'
+                                            day: 'numeric'
                                         })}
                                     </div>
                                 </div>

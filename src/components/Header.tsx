@@ -6,7 +6,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { LogOut, User } from "lucide-react";
 
 export default function Header() {
-    const [user, setUser] = useState<{ username: string } | null>(null);
+    const [user, setUser] = useState<{ username: string; nickname?: string } | null>(null);
     const router = useRouter();
     const pathname = usePathname();
 
@@ -38,23 +38,28 @@ export default function Header() {
     }
 
     return (
-        <header className="px-6 py-5 border-b border-orange-50 flex items-center justify-between sticky top-0 bg-white/90 backdrop-blur-md z-20">
-            <Link href="/" className="hover:opacity-80 transition-opacity">
-                <h1 className="text-2xl font-bold text-orange-500 flex items-center gap-2">
-                    <span className="bg-orange-100 p-2 rounded-2xl text-xl transition-transform active:scale-90">🍚</span>
-                    <span className="tracking-tighter">밥총무</span>
+        <header className="px-6 py-4 border-b border-slate-800 flex items-center justify-between sticky top-0 bg-slate-900 backdrop-blur-md z-30 shadow-lg shadow-slate-950/20">
+            <Link href="/" className="hover:opacity-90 transition-opacity">
+                <h1 className="text-xl font-black text-white flex items-center gap-2">
+                    <div className="bg-orange-500 p-2 rounded-xl text-white shadow-lg shadow-orange-500/20">
+                        <User size={18} strokeWidth={3} />
+                    </div>
+                    <span className="tracking-tight">밥총무</span>
                 </h1>
             </Link>
 
             {!isAuthPage && user && (
                 <div className="flex items-center gap-4 animate-in fade-in slide-in-from-right-2 duration-300">
-                    <div className="flex flex-col items-end">
-                        <span className="text-[10px] font-bold text-slate-300 uppercase tracking-tight">반가워요</span>
-                        <span className="text-xs font-bold text-slate-600">{user.username}님</span>
-                    </div>
+                    <Link href="/profile" className="flex flex-col items-end group cursor-pointer">
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none group-hover:text-orange-500 transition-colors">MEMBER</span>
+                        <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-bold text-slate-200 group-hover:text-white transition-colors">{user.nickname || user.username}님</span>
+                            <div className="w-1.5 h-1.5 rounded-full bg-orange-500 group-hover:scale-125 transition-transform" />
+                        </div>
+                    </Link>
                     <button
                         onClick={handleLogout}
-                        className="p-2.5 bg-slate-50 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all active:scale-90 border border-transparent hover:border-rose-100"
+                        className="p-2 bg-slate-800 text-slate-400 hover:text-white hover:bg-rose-500/10 hover:border-rose-500/20 rounded-xl transition-all active:scale-95 border border-slate-700"
                         title="로그아웃"
                     >
                         <LogOut size={18} strokeWidth={2.5} />

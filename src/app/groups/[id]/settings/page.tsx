@@ -61,6 +61,28 @@ export default function GroupSettings() {
         }
     }
 
+    async function handleDissolve() {
+        if (!confirm("정말 밥조를 해산하시겠습니까?\n해산된 밥조는 메인 페이지에서 사라집니다.")) return;
+
+        try {
+            const res = await fetch("/api/groups", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id: Number(id), is_active: 0 }),
+            });
+
+            if (res.ok) {
+                alert("밥조가 해산되었습니다.");
+                router.push("/");
+            } else {
+                alert("해산 처리에 실패했습니다.");
+            }
+        } catch (error) {
+            console.error("Failed to dissolve group:", error);
+            alert("처리 중 오류가 발생했습니다.");
+        }
+    }
+
     if (isLoading) return <div className="p-8 text-center text-slate-400 font-bold">정보를 불러오고 있어요... 🥣</div>;
     if (!group) return <div className="p-8 text-center text-slate-400 font-bold">모임을 찾을 수 없습니다.</div>;
 
@@ -122,6 +144,21 @@ export default function GroupSettings() {
                             <span className="text-xs font-bold whitespace-nowrap">모임 생성일: {creationDate}</span>
                         </div>
                     </div>
+                </div>
+
+                {/* Danger Zone */}
+                <div className="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-rose-200/20 border-2 border-rose-50 space-y-4">
+                    <h3 className="font-bold text-rose-500 text-lg">밥조 해산</h3>
+                    <p className="text-sm text-slate-400 font-medium leading-relaxed">
+                        밥조를 해산하면 더 이상 메인 페이지에 표시되지 않으며,<br />
+                        '지난 밥조' 목록으로 이동합니다.
+                    </p>
+                    <button
+                        onClick={handleDissolve}
+                        className="w-full py-4 bg-rose-50 text-rose-500 hover:bg-rose-100 rounded-2xl font-bold transition-all active:scale-95 border border-rose-100"
+                    >
+                        밥조 해산하기
+                    </button>
                 </div>
             </div>
         </div>

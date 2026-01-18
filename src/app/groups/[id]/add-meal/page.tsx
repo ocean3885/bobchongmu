@@ -116,7 +116,7 @@ export default function AddMeal() {
                             placeholder="어디서 드셨나요? (예: 맛나김밥)"
                             value={restaurantName}
                             onChange={(e) => setRestaurantName(e.target.value)}
-                            className="w-full px-5 py-5 rounded-[1.5rem] bg-white border-2 border-slate-100 focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-400 transition-all font-bold text-lg shadow-sm placeholder:text-slate-300"
+                            className="w-full h-[72px] px-5 rounded-[1.5rem] bg-white border-2 border-slate-100 appearance-none focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-400 transition-all font-bold text-lg shadow-sm placeholder:text-slate-300"
                         />
                     </div>
 
@@ -130,7 +130,7 @@ export default function AddMeal() {
                                 type="date"
                                 value={date}
                                 onChange={(e) => setDate(e.target.value)}
-                                className="w-full px-5 py-5 rounded-[1.5rem] bg-white border-2 border-slate-100 focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-400 transition-all font-bold text-lg shadow-sm"
+                                className="w-full h-[72px] px-5 rounded-[1.5rem] bg-white border-2 border-slate-100 appearance-none focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-400 transition-all font-bold text-lg shadow-sm"
                             />
                         </div>
                         <div className="space-y-2">
@@ -145,7 +145,7 @@ export default function AddMeal() {
                                     placeholder="0"
                                     value={totalAmount}
                                     onChange={(e) => setTotalAmount(formatNumber(e.target.value))}
-                                    className="w-full px-5 py-5 rounded-[1.5rem] bg-white border-2 border-slate-100 focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-400 transition-all font-bold text-lg shadow-sm placeholder:text-slate-300 pr-12"
+                                    className="w-full h-[72px] px-5 rounded-[1.5rem] bg-white border-2 border-slate-100 appearance-none focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-400 transition-all font-bold text-lg shadow-sm placeholder:text-slate-300 pr-12"
                                 />
                                 <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">원</span>
                             </div>

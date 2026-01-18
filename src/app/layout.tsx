@@ -25,9 +25,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={cn(inter.className, "bg-orange-50/30 min-h-screen")}>
-        <div className="max-w-md mx-auto bg-white min-h-screen shadow-2xl shadow-orange-100 border-x border-orange-100">
+        <div className="max-w-2xl mx-auto bg-white min-h-screen shadow-2xl shadow-orange-100 border-x border-orange-100 flex flex-col">
           <Header />
-          <main className="pb-20">
+          <main>
             {children}
           </main>
         </div>

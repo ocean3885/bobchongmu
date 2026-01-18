@@ -9,6 +9,7 @@ interface Group {
     id: number;
     name: string;
     overhead_balance: number;
+    is_active: number;
 }
 
 interface Member {
@@ -35,7 +36,7 @@ export default function GroupDetail() {
 
     const fetchData = useCallback(async () => {
         const [groupRes, memberRes, mealRes] = await Promise.all([
-            fetch("/api/groups"),
+            fetch(`/api/groups?id=${id}`),
             fetch(`/api/members?groupId=${id}`),
             fetch(`/api/meals?groupId=${id}&limit=5`)
         ]);
@@ -44,9 +45,8 @@ export default function GroupDetail() {
         const memberData = await memberRes.json();
         const mealData = await mealRes.json();
 
-        if (Array.isArray(groupData)) {
-            const found = groupData.find((g: Group) => g.id === Number(id));
-            if (found) setGroup(found);
+        if (groupData && !groupData.error) {
+            setGroup(groupData);
         }
         if (Array.isArray(memberData)) setMembers(memberData);
         if (Array.isArray(mealData)) setMeals(mealData);
@@ -72,6 +72,9 @@ export default function GroupDetail() {
                 <div className="flex items-center gap-3 mb-6">
                     <span className="text-4xl">🏠</span>
                     <h2 className="text-3xl font-bold">{group.name}</h2>
+                    {group.is_active === 0 && (
+                        <span className="bg-rose-500 text-white text-xs px-2 py-1 rounded-md font-bold">해산됨</span>
+                    )}
                 </div>
 
                 <div className="bg-white/20 backdrop-blur-md rounded-[2.5rem] p-8 border border-white/20 shadow-inner relative overflow-hidden group">
@@ -105,6 +108,7 @@ export default function GroupDetail() {
             <div className="px-6 -mt-10 space-y-4">
                 <div className="grid grid-cols-1 gap-4">
                     <button
+                        disabled={group.is_active === 0}
                         onClick={() => {
                             if (activeMembers.length === 0) {
                                 alert("멤버를 먼저 추가하시기 바랍니다");
@@ -112,7 +116,8 @@ export default function GroupDetail() {
                                 router.push(`/groups/${id}/add-meal`);
                             }
                         }}
-                        className="w-full flex items-center gap-5 p-6 rounded-[2.5rem] bg-white shadow-xl shadow-orange-200/20 border-2 border-transparent hover:border-orange-200 transition-all duration-300 group overflow-hidden relative text-left"
+                        className={`w-full flex items-center gap-5 p-6 rounded-[2.5rem] shadow-xl shadow-orange-200/20 border-2 border-transparent transition-all duration-300 group overflow-hidden relative text-left ${group.is_active === 0 ? "bg-slate-100 grayscale cursor-not-allowed" : "bg-white hover:border-orange-200"
+                            }`}
                     >
                         <div className="p-4 bg-orange-100 text-orange-500 rounded-2xl group-hover:bg-orange-500 group-hover:text-white transition-all duration-300">
                             <Utensils size={28} strokeWidth={2.5} />
@@ -138,13 +143,15 @@ export default function GroupDetail() {
                         </Link>
 
                         <div className="flex flex-col gap-4">
-                            <Link
-                                href={`/groups/${id}/settings`}
-                                className="flex-1 flex flex-col gap-3 p-6 rounded-[2.5rem] bg-slate-50 border-2 border-slate-100 text-slate-400 text-sm font-bold items-center justify-center hover:bg-white hover:border-orange-100 transition-all active:scale-95 group"
-                            >
-                                <Settings size={20} className="group-hover:rotate-45 transition-transform" />
-                                모임 설정
-                            </Link>
+                            {group.is_active === 1 && (
+                                <Link
+                                    href={`/groups/${id}/settings`}
+                                    className="flex-1 flex flex-col gap-3 p-6 rounded-[2.5rem] bg-slate-50 border-2 border-slate-100 text-slate-400 text-sm font-bold items-center justify-center hover:bg-white hover:border-orange-100 transition-all active:scale-95 group"
+                                >
+                                    <Settings size={20} className="group-hover:rotate-45 transition-transform" />
+                                    모임 설정
+                                </Link>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, Utensils, History, Calendar, Coins, Users } from "lucide-react";
 
@@ -16,6 +16,8 @@ interface Meal {
 
 export default function MealHistory() {
     const { id } = useParams();
+    const searchParams = useSearchParams();
+    const backLink = searchParams.get("source") === "profile" ? "/profile" : `/groups/${id}`;
     const [meals, setMeals] = useState<Meal[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -43,7 +45,7 @@ export default function MealHistory() {
         <div className="flex flex-col min-h-screen bg-orange-50/10 pb-20">
             <div className="sticky top-0 bg-white/80 backdrop-blur-md z-10 border-b border-orange-50">
                 <div className="px-6 py-5 flex items-center gap-4">
-                    <Link href={`/groups/${id}`} className="p-2 -ml-2 text-slate-400 hover:text-orange-500 transition-colors bg-slate-50 rounded-full">
+                    <Link href={backLink} className="p-2 -ml-2 text-slate-400 hover:text-orange-500 transition-colors bg-slate-50 rounded-full">
                         <ChevronLeft size={20} strokeWidth={3} />
                     </Link>
                     <h2 className="text-2xl font-bold text-slate-800 tracking-tight">전체 식사 내역</h2>

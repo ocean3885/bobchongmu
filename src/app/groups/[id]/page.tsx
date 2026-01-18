@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Users, Utensils, IndianRupee, History, Settings, ChevronLeft, Wallet, Coins } from "lucide-react";
 
 interface Group {
@@ -28,6 +28,7 @@ interface Meal {
 
 export default function GroupDetail() {
     const { id } = useParams();
+    const router = useRouter();
     const [group, setGroup] = useState<Group | null>(null);
     const [members, setMembers] = useState<Member[]>([]);
     const [meals, setMeals] = useState<Meal[]>([]);
@@ -80,7 +81,7 @@ export default function GroupDetail() {
                             <Wallet size={12} /> 우리 모임 총합 잔액
                         </p>
                         <div className="flex items-baseline gap-1">
-                            <span className="text-5xl font-bold tracking-tight">₩{totalBalance.toLocaleString()}</span>
+                            <span className="text-5xl font-bold tracking-tight">{totalBalance.toLocaleString()}원</span>
                         </div>
 
                         <div className="mt-6 pt-5 border-t border-white/10 flex items-center justify-between">
@@ -90,7 +91,7 @@ export default function GroupDetail() {
                                 </div>
                                 <div>
                                     <p className="text-white/60 text-[10px] uppercase font-bold tracking-wider mb-0.5">자투리돈</p>
-                                    <p className="text-base font-bold">₩{group.overhead_balance?.toLocaleString()}</p>
+                                    <p className="text-base font-bold">{group.overhead_balance?.toLocaleString()}원</p>
                                 </div>
                             </div>
                             <Link href={`/groups/${id}/overhead`} className="bg-white/20 hover:bg-white/30 text-xs px-3 py-2 rounded-xl font-bold transition-all transition-colors active:scale-95">
@@ -103,9 +104,15 @@ export default function GroupDetail() {
 
             <div className="px-6 -mt-10 space-y-4">
                 <div className="grid grid-cols-1 gap-4">
-                    <Link
-                        href={`/groups/${id}/add-meal`}
-                        className="flex items-center gap-5 p-6 rounded-[2.5rem] bg-white shadow-xl shadow-orange-200/20 border-2 border-transparent hover:border-orange-200 transition-all duration-300 group overflow-hidden relative"
+                    <button
+                        onClick={() => {
+                            if (activeMembers.length === 0) {
+                                alert("멤버를 먼저 추가하시기 바랍니다");
+                            } else {
+                                router.push(`/groups/${id}/add-meal`);
+                            }
+                        }}
+                        className="w-full flex items-center gap-5 p-6 rounded-[2.5rem] bg-white shadow-xl shadow-orange-200/20 border-2 border-transparent hover:border-orange-200 transition-all duration-300 group overflow-hidden relative text-left"
                     >
                         <div className="p-4 bg-orange-100 text-orange-500 rounded-2xl group-hover:bg-orange-500 group-hover:text-white transition-all duration-300">
                             <Utensils size={28} strokeWidth={2.5} />
@@ -114,7 +121,7 @@ export default function GroupDetail() {
                             <h3 className="text-xl font-bold text-slate-800">식사 기록하기</h3>
                             <p className="text-sm font-semibold text-slate-400 mt-0.5">비용 정산을 시작해보세요!</p>
                         </div>
-                    </Link>
+                    </button>
 
                     <div className="grid grid-cols-2 gap-4">
                         <Link
@@ -172,7 +179,7 @@ export default function GroupDetail() {
                                     <div className={member.balance < 0
                                         ? "text-rose-500 font-bold text-base bg-rose-50 px-4 py-1.5 rounded-full border border-rose-100"
                                         : "text-emerald-600 font-bold text-base bg-emerald-50 px-4 py-1.5 rounded-full border border-emerald-100"}>
-                                        ₩{member.balance.toLocaleString()}
+                                        {member.balance.toLocaleString()}원
                                     </div>
                                 </div>
                                 <div className="absolute -right-2 -bottom-2 text-6xl opacity-[0.02] group-hover:scale-110 transition-transform duration-500 grayscale pointer-events-none">👤</div>
@@ -218,11 +225,11 @@ export default function GroupDetail() {
                                 <div className="text-right flex flex-col items-end shrink-0">
                                     <div className="flex flex-col items-end mb-1">
                                         <span className="text-[9px] font-bold text-orange-400 uppercase tracking-tighter leading-none">총 결제</span>
-                                        <span className="text-lg font-bold text-orange-500 leading-tight">₩{meal.total_amount.toLocaleString()}</span>
+                                        <span className="text-lg font-bold text-orange-500 leading-tight">{meal.total_amount.toLocaleString()}원</span>
                                     </div>
                                     <div className="flex flex-col items-end">
                                         <span className="text-[9px] font-bold text-slate-300 uppercase tracking-tighter leading-none">1인당</span>
-                                        <span className="text-sm font-semibold text-slate-500 leading-none">₩{meal.amount_per_person.toLocaleString()}</span>
+                                        <span className="text-sm font-semibold text-slate-500 leading-none">{meal.amount_per_person.toLocaleString()}원</span>
                                     </div>
                                 </div>
                             </div>

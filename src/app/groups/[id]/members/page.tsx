@@ -152,7 +152,7 @@ export default function MemberManage() {
                                         <div className={member.balance < 0
                                             ? "bg-rose-50 text-rose-500 px-4 py-1.5 rounded-full font-bold text-base border border-rose-100"
                                             : "bg-emerald-50 text-emerald-600 px-4 py-1.5 rounded-full font-bold text-base border border-emerald-100"}>
-                                            ₩{member.balance.toLocaleString()}
+                                            {member.balance.toLocaleString()}원
                                         </div>
                                     </div>
                                 </div>
@@ -190,7 +190,7 @@ export default function MemberManage() {
                                                     정산금
                                                 </div>
                                                 <div className="text-slate-500 font-bold text-base px-1">
-                                                    ₩{member.balance.toLocaleString()}
+                                                    {member.balance.toLocaleString()}원
                                                 </div>
                                             </div>
                                         </div>

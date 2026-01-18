@@ -49,9 +49,15 @@ export default function MemberDetail() {
         fetchData();
     }, [fetchData]);
 
+    const formatNumber = (val: string) => {
+        const num = val.replace(/[^0-9]/g, "");
+        return num ? Number(num).toLocaleString() : "";
+    };
+
     async function handleRecharge(e: React.FormEvent) {
         e.preventDefault();
-        if (isSubmitting || !rechargeAmount || parseInt(rechargeAmount) <= 0) return;
+        const numericAmount = parseInt(rechargeAmount.replace(/,/g, ""));
+        if (isSubmitting || !numericAmount || numericAmount <= 0) return;
 
         setIsSubmitting(true);
         const res = await fetch("/api/transactions", {
@@ -59,7 +65,7 @@ export default function MemberDetail() {
             body: JSON.stringify({
                 type: "deposit",
                 memberId: Number(memberId),
-                amount: parseInt(rechargeAmount),
+                amount: numericAmount,
                 note: "금액 충전",
             }),
         });
@@ -97,7 +103,7 @@ export default function MemberDetail() {
                 <div className="bg-white/20 backdrop-blur-md rounded-[2rem] p-6 border border-white/20 shadow-inner flex items-center justify-between">
                     <div>
                         <p className="text-white/80 text-xs mb-1 uppercase tracking-widest font-bold">나의 현재 잔액</p>
-                        <p className="text-4xl font-bold">₩{member.balance?.toLocaleString()}</p>
+                        <p className="text-4xl font-bold">{member.balance?.toLocaleString()}원</p>
                     </div>
                     <button
                         onClick={() => setIsRecharging(true)}
@@ -118,15 +124,16 @@ export default function MemberDetail() {
                         </h3>
                         <form onSubmit={handleRecharge} className="flex flex-col gap-3">
                             <div className="relative">
-                                <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 font-bold text-lg">₩</span>
                                 <input
                                     autoFocus
-                                    type="number"
+                                    type="text"
+                                    inputMode="numeric"
                                     placeholder="충전할 금액 입력"
                                     value={rechargeAmount}
-                                    onChange={(e) => setRechargeAmount(e.target.value)}
-                                    className="w-full pl-11 pr-5 py-4 rounded-2xl bg-emerald-50/30 border-2 border-emerald-50 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-400 transition-all font-bold text-lg"
+                                    onChange={(e) => setRechargeAmount(formatNumber(e.target.value))}
+                                    className="w-full px-5 py-4 rounded-2xl bg-emerald-50/30 border-2 border-emerald-50 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-400 transition-all font-bold text-lg pr-12"
                                 />
+                                <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">원</span>
                             </div>
                             <div className="flex gap-2">
                                 <button
@@ -173,7 +180,7 @@ export default function MemberDetail() {
                                         </h4>
                                         <span className={`font-bold text-lg ${t.type === 'deposit' || t.type === 'overhead_usage' ? 'text-blue-500' : 'text-rose-500'
                                             }`}>
-                                            {t.type === 'deposit' || t.type === 'overhead_usage' ? '+' : '-'}₩{Math.abs(t.amount).toLocaleString()}
+                                            {t.type === 'deposit' || t.type === 'overhead_usage' ? '+' : '-'}{Math.abs(t.amount).toLocaleString()}원
                                         </span>
                                     </div>
                                     <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400">

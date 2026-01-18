@@ -77,6 +77,16 @@ export async function POST(req: NextRequest) {
                 insertTransaction.run(groupId, memberId, amountPerPerson, `${restaurantName} 식사`, mealId);
             }
 
+            // 3. Update group overhead balance (zaturi)
+            const overhead = (amountPerPerson * participantIds.length) - totalAmount;
+            if (overhead > 0) {
+                db.prepare('UPDATE groups SET overhead_balance = overhead_balance + ? WHERE id = ?').run(overhead, groupId);
+                db.prepare(`
+                    INSERT INTO transactions (group_id, type, amount, note, related_meal_id)
+                    VALUES (?, 'overhead_accrual', ?, ?, ?)
+                `).run(groupId, overhead, `${restaurantName} 식사 자투리`, mealId);
+            }
+
             return { id: mealId };
         });
 

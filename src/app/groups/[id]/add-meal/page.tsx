@@ -21,6 +21,11 @@ export default function AddMeal() {
     const [selectedMemberIds, setSelectedMemberIds] = useState<number[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const formatNumber = (val: string) => {
+        const num = val.replace(/[^0-9]/g, "");
+        return num ? Number(num).toLocaleString() : "";
+    };
+
     const fetchMembers = useCallback(async () => {
         const res = await fetch(`/api/members?groupId=${id}`);
         const data = await res.json();
@@ -51,7 +56,7 @@ export default function AddMeal() {
     };
 
     const calculation = useMemo(() => {
-        const amount = parseInt(totalAmount) || 0;
+        const amount = parseInt(totalAmount.replace(/,/g, "")) || 0;
         const count = selectedMemberIds.length;
         if (amount <= 0 || count <= 0) return { perPerson: 0, overhead: 0 };
 
@@ -64,7 +69,8 @@ export default function AddMeal() {
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        if (isSubmitting || !restaurantName || !totalAmount || selectedMemberIds.length === 0) return;
+        const numericAmount = parseInt(totalAmount.replace(/,/g, ""));
+        if (isSubmitting || !restaurantName || !numericAmount || selectedMemberIds.length === 0) return;
 
         setIsSubmitting(true);
         const res = await fetch("/api/meals", {
@@ -73,8 +79,9 @@ export default function AddMeal() {
                 groupId: Number(id),
                 restaurantName,
                 date,
-                totalAmount: parseInt(totalAmount),
-                memberIds: selectedMemberIds,
+                totalAmount: numericAmount,
+                amountPerPerson: calculation.perPerson,
+                participantIds: selectedMemberIds,
             }),
         });
 
@@ -113,7 +120,7 @@ export default function AddMeal() {
                         />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <label className="text-sm font-bold text-slate-400 flex items-center gap-2 px-1 uppercase tracking-widest">
                                 <Calendar size={14} strokeWidth={3} /> 날짜
@@ -131,16 +138,16 @@ export default function AddMeal() {
                                 <Coins size={14} strokeWidth={3} /> 총 결제 금액
                             </label>
                             <div className="relative">
-                                <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300 font-bold">₩</span>
                                 <input
                                     required
-                                    type="number"
+                                    type="text"
                                     inputMode="numeric"
                                     placeholder="0"
                                     value={totalAmount}
-                                    onChange={(e) => setTotalAmount(e.target.value)}
-                                    className="w-full pl-11 pr-5 py-5 rounded-[1.5rem] bg-white border-2 border-slate-100 focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-400 transition-all font-bold text-lg shadow-sm placeholder:text-slate-300"
+                                    onChange={(e) => setTotalAmount(formatNumber(e.target.value))}
+                                    className="w-full px-5 py-5 rounded-[1.5rem] bg-white border-2 border-slate-100 focus:outline-none focus:ring-4 focus:ring-orange-500/10 focus:border-orange-400 transition-all font-bold text-lg shadow-sm placeholder:text-slate-300 pr-12"
                                 />
+                                <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold">원</span>
                             </div>
                         </div>
                     </div>
@@ -192,10 +199,10 @@ export default function AddMeal() {
                     </div>
                     <div className="flex justify-between items-end relative z-10">
                         <div className="text-4xl font-bold tracking-tight">
-                            ₩{calculation.perPerson.toLocaleString()}
+                            {calculation.perPerson.toLocaleString()}원
                         </div>
                         <div className="text-emerald-400 font-bold text-lg mb-1 bg-emerald-400/10 px-3 py-1 rounded-full border border-emerald-400/20">
-                            +₩{calculation.overhead.toLocaleString()}
+                            +{calculation.overhead.toLocaleString()}원
                         </div>
                     </div>
                     <div className="pt-5 border-t border-white/10 relative z-10">
@@ -212,7 +219,7 @@ export default function AddMeal() {
                 >
                     {isSubmitting ? "기록 중..." : "기록 완료!"}
                 </button>
-            </form>
-        </div>
+            </form >
+        </div >
     );
 }

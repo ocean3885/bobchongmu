@@ -12,11 +12,24 @@ export async function GET(req: NextRequest) {
         const id = searchParams.get('id');
 
         if (id) {
-            const group = db.prepare('SELECT * FROM groups WHERE id = ? AND user_id = ?').get(id, userId);
+            const group = db.prepare(`
+                SELECT g.*, 
+                (SELECT COUNT(*) FROM members WHERE group_id = g.id AND is_active = 1) as member_count,
+                (SELECT SUM(balance) FROM members WHERE group_id = g.id) as total_balance
+                FROM groups g 
+                WHERE g.id = ? AND g.user_id = ?
+            `).get(id, userId);
             return NextResponse.json(group);
         }
 
-        const groups = db.prepare('SELECT * FROM groups WHERE user_id = ? ORDER BY created_at DESC').all(userId);
+        const groups = db.prepare(`
+            SELECT g.*, 
+            (SELECT COUNT(*) FROM members WHERE group_id = g.id AND is_active = 1) as member_count,
+            (SELECT SUM(balance) FROM members WHERE group_id = g.id) as total_balance
+            FROM groups g 
+            WHERE g.user_id = ? 
+            ORDER BY g.created_at DESC
+        `).all(userId);
         return NextResponse.json(groups);
     } catch (error) {
         console.error('Failed to fetch groups:', error);

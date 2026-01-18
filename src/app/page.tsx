@@ -7,7 +7,8 @@ import { Plus, Users, ChevronRight, LayoutDashboard } from "lucide-react";
 interface Group {
   id: number;
   name: string;
-  overhead_balance: number;
+  member_count: number;
+  total_balance: number;
   created_at: string;
 }
 
@@ -62,7 +63,10 @@ export default function Home() {
               </div>
               <div>
                 <h3 className="text-xl font-bold text-slate-800">{group.name}</h3>
-                <p className="text-sm font-semibold text-orange-400 mt-1">자투리돈: ₩{group.overhead_balance?.toLocaleString()}</p>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-2">
+                  <span className="text-[11px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200/50 uppercase tracking-tighter">인원: {group.member_count}명</span>
+                  <span className="text-sm font-bold text-orange-500">총 잔액: {group.total_balance?.toLocaleString() || 0}원</span>
+                </div>
               </div>
             </div>
             <div className="bg-white p-2 rounded-full shadow-sm text-orange-300 group-hover:text-orange-500 transition-colors">

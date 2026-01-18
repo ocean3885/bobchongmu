@@ -1,6 +1,8 @@
-import db from './db';
+// This file should not import db.ts directly to avoid circular dependencies.
+// The db instance should be passed in as an argument.
+import { Database } from 'better-sqlite3';
 
-export const migrate = () => {
+export const migrate = (db: Database) => {
     try {
         console.log('Starting migration...');
 

@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Plus, Wallet, History, Utensils, Coins, CalendarDays, ArrowDownCircle, ArrowUpCircle } from "lucide-react";
+import { ChevronLeft, Plus, Wallet, History, Utensils, Coins, CalendarDays, ArrowDownCircle, ArrowUpCircle, Trash2 } from "lucide-react";
 
 interface Member {
     id: number;
@@ -28,6 +28,10 @@ export default function MemberDetail() {
     const [isRecharging, setIsRecharging] = useState(false);
     const [rechargeAmount, setRechargeAmount] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Edit Transaction State
+    const [editingTx, setEditingTx] = useState<Transaction | null>(null);
+    const [editAmount, setEditAmount] = useState("");
 
     const fetchData = useCallback(async () => {
         const [memberRes, transRes] = await Promise.all([
@@ -78,6 +82,57 @@ export default function MemberDetail() {
         } else {
             setIsSubmitting(false);
             alert("충전에 실패했어요 😢");
+        }
+    }
+
+    const openEditTx = (tx: Transaction) => {
+        if (tx.type !== 'deposit') return;
+        setEditingTx(tx);
+        setEditAmount(tx.amount.toString());
+    };
+
+    async function handleUpdateTx(e: React.FormEvent) {
+        e.preventDefault();
+        if (!editingTx) return;
+        const numericAmount = parseInt(editAmount.replace(/,/g, ""));
+        if (isSubmitting || !numericAmount) return;
+
+        setIsSubmitting(true);
+        const res = await fetch(`/api/transactions/${editingTx.id}`, {
+            method: "PUT",
+            body: JSON.stringify({
+                amount: numericAmount,
+                note: editingTx.note // Keep original note
+            }),
+        });
+
+        if (res.ok) {
+            setEditingTx(null);
+            setEditAmount("");
+            setIsSubmitting(false);
+            fetchData();
+        } else {
+            setIsSubmitting(false);
+            alert("수정에 실패했어요 😢");
+        }
+    }
+
+    async function handleDeleteTx() {
+        if (!editingTx || !confirm("이 예치금 내역을 삭제하시겠습니까?\n이 금액만큼 멤버 잔액에서 차감됩니다.")) return;
+
+        setIsSubmitting(true);
+        const res = await fetch(`/api/transactions/${editingTx.id}`, {
+            method: "DELETE"
+        });
+
+        if (res.ok) {
+            setEditingTx(null);
+            setEditAmount("");
+            setIsSubmitting(false);
+            fetchData();
+        } else {
+            setIsSubmitting(false);
+            alert("삭제에 실패했어요 😢");
         }
     }
 
@@ -155,6 +210,57 @@ export default function MemberDetail() {
                     </div>
                 )}
 
+                {/* Edit Transaction Modal */}
+                {editingTx && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+                        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setEditingTx(null)} />
+                        <div className="bg-white w-full max-w-sm p-6 rounded-[2.5rem] shadow-2xl relative z-10 animate-in zoom-in-95 duration-200">
+                            <div className="flex items-center justify-between mb-4 px-1">
+                                <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                                    <Wallet className="text-emerald-500" size={20} strokeWidth={3} />
+                                    예치금 내역 수정
+                                </h3>
+                                <button
+                                    type="button"
+                                    onClick={handleDeleteTx}
+                                    className="text-rose-400 hover:text-rose-500 p-2 hover:bg-rose-50 rounded-xl transition-all"
+                                >
+                                    <Trash2 size={18} strokeWidth={2.5} />
+                                </button>
+                            </div>
+                            <form onSubmit={handleUpdateTx} className="flex flex-col gap-3">
+                                <div className="relative">
+                                    <input
+                                        autoFocus
+                                        type="text"
+                                        inputMode="numeric"
+                                        value={formatNumber(editAmount)}
+                                        onChange={(e) => setEditAmount(e.target.value.replace(/,/g, ""))}
+                                        className="w-full px-5 py-4 rounded-2xl bg-emerald-50/30 border-2 border-emerald-50 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-400 transition-all font-bold text-lg pr-12"
+                                    />
+                                    <span className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">원</span>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button
+                                        type="submit"
+                                        disabled={isSubmitting || !editAmount}
+                                        className="flex-[2] bg-emerald-500 text-white py-4 rounded-2xl font-bold text-lg hover:bg-emerald-600 shadow-lg shadow-emerald-200 transition-all active:scale-95 disabled:bg-slate-200 disabled:shadow-none"
+                                    >
+                                        {isSubmitting ? "수정 중..." : "수정 완료"}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setEditingTx(null)}
+                                        className="flex-1 bg-slate-100 text-slate-500 py-4 rounded-2xl font-bold hover:bg-slate-200 transition-all"
+                                    >
+                                        취소
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+
                 {/* Transaction History */}
                 <div className="space-y-5 pb-10">
                     <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2 px-1">
@@ -164,7 +270,11 @@ export default function MemberDetail() {
 
                     <div className="space-y-4">
                         {transactions.map((t) => (
-                            <div key={t.id} className="bg-white p-5 rounded-[2rem] border-2 border-slate-50 shadow-sm flex items-center gap-4 group">
+                            <div
+                                key={t.id}
+                                onClick={() => openEditTx(t)}
+                                className={`bg-white p-5 rounded-[2rem] border-2 border-slate-50 shadow-sm flex items-center gap-4 group transition-all ${t.type === 'deposit' ? 'cursor-pointer hover:border-emerald-200 hover:shadow-emerald-100/50' : ''}`}
+                            >
                                 <div className={`p-3 rounded-2xl shadow-sm transition-colors ${t.type === 'deposit' || t.type === 'overhead_usage'
                                     ? 'bg-blue-50 text-blue-500 group-hover:bg-blue-500 group-hover:text-white'
                                     : 'bg-rose-50 text-rose-500 group-hover:bg-rose-500 group-hover:text-white'
@@ -190,6 +300,7 @@ export default function MemberDetail() {
                                             month: 'long',
                                             day: 'numeric'
                                         })}
+                                        {t.type === 'deposit' && <span className="ml-auto text-emerald-500 text-[10px] bg-emerald-50 px-2 py-0.5 rounded-full">수정 가능</span>}
                                     </div>
                                 </div>
                             </div>

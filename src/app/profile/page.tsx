@@ -161,7 +161,7 @@ export default function ProfilePage() {
                             pastGroups.map((group) => (
                                 <Link
                                     key={group.id}
-                                    href={`/groups/${group.id}/meals?source=profile`}
+                                    href={`/groups/${group.id}/history`}
                                     className="block p-6 rounded-3xl bg-slate-50 border-2 border-slate-100 hover:border-orange-200 hover:bg-orange-50/30 transition-all group"
                                 >
                                     <div className="flex flex-col gap-2">

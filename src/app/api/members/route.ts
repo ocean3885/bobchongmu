@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
         if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         const userId = session.user.id;
 
-        const { groupId, name } = await req.json();
+        const { groupId, name, balance } = await req.json();
         if (!groupId || !name) {
             return NextResponse.json({ error: 'groupId and name are required' }, { status: 400 });
         }
@@ -45,8 +45,23 @@ export async function POST(req: NextRequest) {
         const group = db.prepare('SELECT id FROM groups WHERE id = ? AND user_id = ?').get(groupId, userId);
         if (!group) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-        const info = db.prepare('INSERT INTO members (group_id, name) VALUES (?, ?)').run(groupId, name);
-        return NextResponse.json({ id: info.lastInsertRowid, name, groupId });
+        const initialBalance = balance ? parseInt(balance) : 0;
+
+        const createMemberTransaction = db.transaction(() => {
+            const info = db.prepare('INSERT INTO members (group_id, name, balance) VALUES (?, ?, ?)').run(groupId, name, initialBalance);
+            const newMemberId = info.lastInsertRowid;
+
+            if (initialBalance > 0) {
+                db.prepare(`
+                    INSERT INTO transactions (group_id, member_id, type, amount, note)
+                    VALUES (?, ?, 'deposit', ?, '초기 예치금')
+                `).run(groupId, newMemberId, initialBalance);
+            }
+            return { id: newMemberId };
+        });
+
+        const result = createMemberTransaction();
+        return NextResponse.json({ id: result.id, name, groupId, balance: initialBalance });
     } catch (error) {
         console.error('Failed to create member:', error);
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

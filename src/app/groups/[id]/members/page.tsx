@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, UserPlus, Search, Wallet, Plus, ChevronLeft } from "lucide-react";
+import { ArrowLeft, UserPlus, Wallet, Plus, ChevronLeft } from "lucide-react";
 
 interface Member {
     id: number;
@@ -16,7 +16,7 @@ export default function MemberManage() {
     const { id } = useParams();
     const [members, setMembers] = useState<Member[]>([]);
     const [newMemberName, setNewMemberName] = useState("");
-    const [searchTerm, setSearchTerm] = useState("");
+    const [newMemberBalance, setNewMemberBalance] = useState("");
 
     const fetchMembers = useCallback(async () => {
         const res = await fetch(`/api/members?groupId=${id}`);
@@ -34,11 +34,16 @@ export default function MemberManage() {
 
         const res = await fetch("/api/members", {
             method: "POST",
-            body: JSON.stringify({ groupId: Number(id), name: newMemberName }),
+            body: JSON.stringify({
+                groupId: Number(id),
+                name: newMemberName,
+                balance: newMemberBalance ? parseInt(newMemberBalance.replace(/,/g, '')) : 0
+            }),
         });
 
         if (res.ok) {
             setNewMemberName("");
+            setNewMemberBalance("");
             fetchMembers();
         }
     }
@@ -61,12 +66,8 @@ export default function MemberManage() {
         }
     }
 
-    const filteredMembers = members.filter(m =>
-        m.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    const activeMembers = filteredMembers.filter(m => m.is_active === 1);
-    const inactiveMembers = filteredMembers.filter(m => m.is_active === 0);
+    const activeMembers = members.filter(m => m.is_active === 1);
+    const inactiveMembers = members.filter(m => m.is_active === 0);
 
     return (
         <div className="flex flex-col min-h-screen pb-10 bg-emerald-50/10">
@@ -89,9 +90,21 @@ export default function MemberManage() {
                     <form onSubmit={addMember} className="flex flex-col gap-3">
                         <input
                             type="text"
-                            placeholder="멤버 이름을 입력해 주세요"
+                            placeholder="멤버 이름"
                             value={newMemberName}
                             onChange={(e) => setNewMemberName(e.target.value)}
+                            className="w-full px-5 py-4 rounded-2xl bg-emerald-50/50 border-2 border-emerald-50 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-400 transition-all font-semibold text-lg placeholder:text-emerald-200"
+                        />
+                        <input
+                            type="text"
+                            placeholder="초기 예치금 (선택)"
+                            value={newMemberBalance}
+                            onChange={(e) => {
+                                const value = e.target.value.replace(/,/g, '');
+                                if (!isNaN(Number(value)) || value === '') {
+                                    setNewMemberBalance(Number(value).toLocaleString());
+                                }
+                            }}
                             className="w-full px-5 py-4 rounded-2xl bg-emerald-50/50 border-2 border-emerald-50 focus:outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-400 transition-all font-semibold text-lg placeholder:text-emerald-200"
                         />
                         <button
@@ -110,16 +123,6 @@ export default function MemberManage() {
                         <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest px-2 flex items-center justify-between">
                             <span>현재 활동 중인 멤버 ({members.length})</span>
                         </h3>
-                        <div className="relative">
-                            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-300" size={20} strokeWidth={2.5} />
-                            <input
-                                type="text"
-                                placeholder="멤버 검색하기..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-14 pr-6 py-4 rounded-[2rem] bg-white border-2 border-slate-100 focus:outline-none focus:ring-4 focus:ring-slate-500/5 focus:border-slate-200 transition-all font-semibold text-slate-600 shadow-sm"
-                            />
-                        </div>
                     </div>
 
                     <div className="space-y-6">

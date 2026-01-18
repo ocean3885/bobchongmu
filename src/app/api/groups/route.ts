@@ -40,14 +40,21 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
     try {
         const session = await getSession();
-        if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        if (!session) {
+            console.log('Unauthorized group creation attempt');
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
         const userId = session.user.id;
 
         const { name } = await req.json();
+        console.log(`Creating group: ${name} for user: ${userId}`);
+
         if (!name) {
             return NextResponse.json({ error: 'Name is required' }, { status: 400 });
         }
         const info = db.prepare('INSERT INTO groups (name, user_id) VALUES (?, ?)').run(name, userId);
+        console.log(`Group created with ID: ${info.lastInsertRowid}`);
+
         return NextResponse.json({ id: info.lastInsertRowid, name });
     } catch (error) {
         console.error('Failed to create group:', error);

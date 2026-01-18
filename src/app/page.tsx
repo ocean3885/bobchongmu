@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Plus, Users, ChevronRight, LayoutDashboard } from "lucide-react";
 
 interface Group {
@@ -16,11 +17,20 @@ export default function Home() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [newGroupName, setNewGroupName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const router = useRouter();
 
   async function fetchGroups() {
-    const res = await fetch("/api/groups");
-    const data = await res.json();
-    if (Array.isArray(data)) setGroups(data);
+    try {
+      const res = await fetch("/api/groups");
+      if (res.status === 401) {
+        router.push("/login");
+        return;
+      }
+      const data = await res.json();
+      if (Array.isArray(data)) setGroups(data);
+    } catch (err) {
+      console.error("Failed to fetch groups:", err);
+    }
   }
 
   useEffect(() => {
@@ -31,15 +41,23 @@ export default function Home() {
     e.preventDefault();
     if (!newGroupName.trim()) return;
 
-    const res = await fetch("/api/groups", {
-      method: "POST",
-      body: JSON.stringify({ name: newGroupName }),
-    });
+    try {
+      const res = await fetch("/api/groups", {
+        method: "POST",
+        body: JSON.stringify({ name: newGroupName }),
+      });
 
-    if (res.ok) {
-      setNewGroupName("");
-      setIsCreating(false);
-      fetchGroups();
+      if (res.ok) {
+        setNewGroupName("");
+        setIsCreating(false);
+        fetchGroups();
+      } else {
+        const errorData = await res.json();
+        alert(`모임 생성 실패: ${errorData.error || res.statusText}`);
+      }
+    } catch (err) {
+      console.error("Group creation error:", err);
+      alert("네트워크 오류가 발생했습니다.");
     }
   }
 

@@ -1,6 +1,6 @@
 import db from './db';
 
-const migrate = () => {
+export const migrate = () => {
     try {
         console.log('Starting migration...');
 
@@ -62,5 +62,3 @@ const migrate = () => {
         console.error('Migration failed:', error);
     }
 };
-
-migrate();
